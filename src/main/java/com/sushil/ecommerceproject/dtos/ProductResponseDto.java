@@ -1,15 +1,16 @@
-package com.sushil.ecommerceproject.models;
+package com.sushil.ecommerceproject.dtos;
 
 import lombok.Getter;
 import lombok.Setter;
 
 @Getter
 @Setter
-public class Product extends BaseModel {
+public class ProductResponseDto {
+    private long id;
     private String name;
     private String brandName;
     private String description;
     private double price;
-    private Category category;
-    private String imageUrl;
+    private String category;
+    private String image;
 }
