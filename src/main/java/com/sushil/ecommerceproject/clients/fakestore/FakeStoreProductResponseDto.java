@@ -1,4 +1,4 @@
-package com.sushil.ecommerceproject.dtos;
+package com.sushil.ecommerceproject.clients.fakestore;
 
 import lombok.Getter;
 import lombok.Setter;
