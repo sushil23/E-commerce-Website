@@ -1,7 +1,9 @@
 package com.sushil.ecommerceproject.services;
 
 import com.sushil.ecommerceproject.clients.fakestore.FakeStoreClient;
+import com.sushil.ecommerceproject.clients.fakestore.FakeStoreProductRequestDto;
 import com.sushil.ecommerceproject.clients.fakestore.FakeStoreProductResponseDto;
+import com.sushil.ecommerceproject.controllers.ProductController;
 import com.sushil.ecommerceproject.dtos.ProductResponseDto;
 import com.sushil.ecommerceproject.models.Category;
 import com.sushil.ecommerceproject.models.Product;
@@ -23,7 +25,19 @@ public class FakeStoreProductServiceImplementation implements ProductService {
         this.fakeStoreClient = fakeStoreClient;
     }
 
-    private Product convertFakeStoreProductResponseDtoToProduct(FakeStoreProductResponseDto fakeStoreProductResponseDto) {
+    private FakeStoreProductRequestDto getFakeStoreProductReqDtoFromProd(Product product) {
+        FakeStoreProductRequestDto fakeStoreProductRequestDto = new FakeStoreProductRequestDto();
+
+        fakeStoreProductRequestDto.setTitle(product.getName());
+        fakeStoreProductRequestDto.setDescription(product.getDescription());
+        fakeStoreProductRequestDto.setPrice(product.getPrice());
+        fakeStoreProductRequestDto.setCategory(product.getCategory().getName());
+        fakeStoreProductRequestDto.setImage(product.getImageUrl());
+
+        return fakeStoreProductRequestDto;
+    }
+
+     static Product convertFakeStoreProductResponseDtoToProduct(FakeStoreProductResponseDto fakeStoreProductResponseDto) {
         Product product = new Product();
 
         product.setId(fakeStoreProductResponseDto.getId());
@@ -67,17 +81,37 @@ public class FakeStoreProductServiceImplementation implements ProductService {
     }
 
     @Override
-    public String addANewProduct() {
-        return null;
+    public Optional<Product> addANewProduct(Product product) {
+        FakeStoreProductRequestDto fakeStoreProductRequestDto = getFakeStoreProductReqDtoFromProd(product);
+        Optional<FakeStoreProductResponseDto> fakeStoreProductResponseDto = fakeStoreClient.addANewProduct(fakeStoreProductRequestDto);
+
+        if (fakeStoreProductResponseDto.isEmpty()) {
+            return Optional.empty();
+        }
+
+        return Optional.of(convertFakeStoreProductResponseDtoToProduct(fakeStoreProductResponseDto.get()));
     }
 
     @Override
-    public String updateAProduct() {
-        return null;
+    public Optional<Product> updateAProduct(Long productId, Product product) {
+        FakeStoreProductRequestDto fakeStoreProductRequestDto = getFakeStoreProductReqDtoFromProd(product);
+        Optional<FakeStoreProductResponseDto> fakeStoreProdOptional = fakeStoreClient.updateAProduct(productId, fakeStoreProductRequestDto);
+        if (fakeStoreProdOptional.isEmpty()) {
+            return Optional.empty();
+        }
+
+        FakeStoreProductResponseDto fakeStoreProductResponseDto = fakeStoreProdOptional.get();
+        Product updatedProduct = convertFakeStoreProductResponseDtoToProduct(fakeStoreProductResponseDto);
+        return Optional.of(updatedProduct);
     }
 
     @Override
-    public String deleteAProduct() {
-        return null;
+    public Optional<Product> deleteAProduct(Long productId) {
+        Optional<FakeStoreProductResponseDto> fakeStoreProdOptional = fakeStoreClient.deleteAProduct(productId);
+        if (fakeStoreProdOptional.isEmpty()) {
+            return Optional.empty();
+        }
+
+        return Optional.of(convertFakeStoreProductResponseDtoToProduct(fakeStoreProdOptional.get()));
     }
 }

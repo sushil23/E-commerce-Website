@@ -3,6 +3,7 @@ package com.sushil.ecommerceproject.controllers;
 import com.sushil.ecommerceproject.dtos.ProductRequestDto;
 import com.sushil.ecommerceproject.dtos.ProductResponseDto;
 import com.sushil.ecommerceproject.exceptions.NotFoundException;
+import com.sushil.ecommerceproject.models.Category;
 import com.sushil.ecommerceproject.models.Product;
 import com.sushil.ecommerceproject.services.ProductService;
 import org.springframework.http.HttpStatus;
@@ -17,13 +18,13 @@ import java.util.Optional;
 @RestController
 @RequestMapping("/products")
 public class ProductController {
-    private ProductService productService;
+    private final ProductService productService;
 
     public ProductController(ProductService productService) {
         this.productService = productService;
     }
 
-    private ProductResponseDto getProductResponseDtoFromProduct(Product product) {
+     static ProductResponseDto getProductResponseDtoFromProduct(Product product) {
         ProductResponseDto productResponseDto = new ProductResponseDto();
 
         productResponseDto.setId(product.getId());
@@ -34,6 +35,20 @@ public class ProductController {
         productResponseDto.setImage(product.getImageUrl());
 
         return productResponseDto;
+    }
+
+     static Product getProductFromProductRequestDto(ProductRequestDto productRequestDto) {
+        Product product = new Product();
+
+        product.setName(productRequestDto.getName());
+        product.setDescription(productRequestDto.getDescription());
+        product.setPrice(productRequestDto.getPrice());
+        Category category = new Category();
+        category.setName(productRequestDto.getCategory());
+        product.setCategory(category);
+        product.setImageUrl(productRequestDto.getImage());
+
+        return product;
     }
 
     @GetMapping()
@@ -49,7 +64,7 @@ public class ProductController {
             productResponseDtos.add(getProductResponseDtoFromProduct(product));
         }
 
-        return new ResponseEntity<>(productResponseDtos, HttpStatusCode.valueOf(200));
+        return new ResponseEntity<>(productResponseDtos, HttpStatus.OK);
     }
 
     @GetMapping("/{productId}")
@@ -65,17 +80,36 @@ public class ProductController {
     }
 
     @PostMapping()
-    public String addANewProduct(@RequestBody ProductRequestDto productRequestDto) {
-        return "";
+    public ResponseEntity<ProductResponseDto> addANewProduct(@RequestBody ProductRequestDto productRequestDto) throws NotFoundException {
+        Product product = getProductFromProductRequestDto(productRequestDto);
+
+        Optional<Product> productOptional = productService.addANewProduct(product);
+        if (productOptional.isEmpty()) {
+            throw new NotFoundException("Product not added");
+        }
+
+        Product createdProduct = productOptional.get();
+        return new ResponseEntity<>(getProductResponseDtoFromProduct(createdProduct), HttpStatus.OK);
     }
 
-    @PutMapping()
-    public String updateAProduct(@RequestBody ProductRequestDto productRequestDto) {
-        return "";
+    @PutMapping("/{productId}")
+    public ResponseEntity<ProductResponseDto> updateAProduct(@PathVariable("productId") Long productId, @RequestBody ProductRequestDto productRequestDto) throws NotFoundException {
+        Product product = getProductFromProductRequestDto(productRequestDto);
+        Optional<Product> productOptional = productService.updateAProduct(productId, product);
+        if (productOptional.isEmpty()) {
+            throw new NotFoundException("Product not updated");
+        }
+
+        return new ResponseEntity<>(getProductResponseDtoFromProduct(productOptional.get()), HttpStatus.OK);
     }
 
     @DeleteMapping("/{productId}")
-    public String deleteAProduct(@PathVariable("productId") Long productId) {
-        return "Delete " + productId;
+    public ResponseEntity<ProductResponseDto> deleteAProduct(@PathVariable("productId") Long productId) throws NotFoundException {
+        Optional<Product> productOptional = productService.deleteAProduct(productId);
+        if (productOptional.isEmpty()) {
+            throw new NotFoundException("Product not found");
+        }
+
+        return new ResponseEntity<>(getProductResponseDtoFromProduct(productOptional.get()), HttpStatus.OK);
     }
 }
