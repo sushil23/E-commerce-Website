@@ -14,7 +14,7 @@ public class Product extends BaseModel {
     private String brandName;
     private String description;
     private double price;
-    @ManyToOne(cascade = {CascadeType.PERSIST, CascadeType.REMOVE})
+    @ManyToOne(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     private Category category;
     private String imageUrl;
 }

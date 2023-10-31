@@ -57,8 +57,8 @@ public class ProductTests {
     }
 
     @Test
-    void checkFindProdByCatId() {
-        List<Product> products = productRepository.findByCategoryId(2L);
+    void checkFindProdByCatName() {
+        List<Product> products = productRepository.findByCategoryName("Electronics");
         for (Product product: products) {
             System.out.println(product.getName());
         }
@@ -67,7 +67,11 @@ public class ProductTests {
     @Test
     @Transactional
     void checkRemoveProdByIdWorkingFine() {
-        Long productId = productRepository.removeProductById(2L);
-        System.out.println("Removed product " + productId);
+        Optional<Long> productIdOptional = productRepository.removeProductById(2L);
+        if (productIdOptional.isEmpty()) {
+            System.out.println("No product deleted");
+        }
+
+        System.out.println("Removed product with id: " + productIdOptional.get());
     }
 }

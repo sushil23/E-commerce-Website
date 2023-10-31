@@ -1,6 +1,7 @@
 package com.sushil.ecommerceproject.repositories;
 
 import com.sushil.ecommerceproject.models.Product;
+import jakarta.transaction.Transactional;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
@@ -13,7 +14,8 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
 
     Optional<Product> findById(Long id);
 
-    List<Product> findByCategoryId(Long id);
+    List<Product> findByCategoryName(String categoryName);
 
-    Long removeProductById(Long id);
+    @Transactional
+    Optional<Long> removeProductById(Long id);
 }

@@ -106,12 +106,12 @@ public class FakeStoreProductServiceImplementation implements ProductService {
     }
 
     @Override
-    public Optional<Product> deleteAProduct(Long productId) {
+    public Optional<Long> deleteAProduct(Long productId) {
         Optional<FakeStoreProductResponseDto> fakeStoreProdOptional = fakeStoreClient.deleteAProduct(productId);
         if (fakeStoreProdOptional.isEmpty()) {
             return Optional.empty();
         }
 
-        return Optional.of(convertFakeStoreProductResponseDtoToProduct(fakeStoreProdOptional.get()));
+        return Optional.of(fakeStoreProdOptional.get().getId());
     }
 }

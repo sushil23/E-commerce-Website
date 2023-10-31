@@ -2,10 +2,12 @@ package com.sushil.ecommerceproject.controllers;
 
 import com.sushil.ecommerceproject.dtos.ProductRequestDto;
 import com.sushil.ecommerceproject.dtos.ProductResponseDto;
+import com.sushil.ecommerceproject.exceptions.NoCategoryProvidedException;
 import com.sushil.ecommerceproject.exceptions.NotFoundException;
 import com.sushil.ecommerceproject.models.Category;
 import com.sushil.ecommerceproject.models.Product;
 import com.sushil.ecommerceproject.services.ProductService;
+import com.sushil.ecommerceproject.services.SelfProductService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
@@ -20,7 +22,7 @@ import java.util.Optional;
 public class ProductController {
     private final ProductService productService;
 
-    public ProductController(ProductService productService) {
+    public ProductController(SelfProductService productService) {
         this.productService = productService;
     }
 
@@ -31,6 +33,7 @@ public class ProductController {
         productResponseDto.setName(product.getName());
         productResponseDto.setDescription(product.getDescription());
         productResponseDto.setPrice(product.getPrice());
+        productResponseDto.setBrandName(product.getBrandName());
         productResponseDto.setCategory(product.getCategory().getName());
         productResponseDto.setImage(product.getImageUrl());
 
@@ -43,6 +46,7 @@ public class ProductController {
         product.setName(productRequestDto.getName());
         product.setDescription(productRequestDto.getDescription());
         product.setPrice(productRequestDto.getPrice());
+        product.setBrandName(productRequestDto.getBrandName());
         Category category = new Category();
         category.setName(productRequestDto.getCategory());
         product.setCategory(category);
@@ -80,8 +84,12 @@ public class ProductController {
     }
 
     @PostMapping()
-    public ResponseEntity<ProductResponseDto> addANewProduct(@RequestBody ProductRequestDto productRequestDto) throws NotFoundException {
+    public ResponseEntity<ProductResponseDto> addANewProduct(@RequestBody ProductRequestDto productRequestDto) throws NotFoundException, NoCategoryProvidedException {
         Product product = getProductFromProductRequestDto(productRequestDto);
+        String categoryName = productRequestDto.getCategory();
+        if (categoryName == null) {
+            throw new NoCategoryProvidedException("Please provide a category");
+        }
 
         Optional<Product> productOptional = productService.addANewProduct(product);
         if (productOptional.isEmpty()) {
@@ -104,12 +112,12 @@ public class ProductController {
     }
 
     @DeleteMapping("/{productId}")
-    public ResponseEntity<ProductResponseDto> deleteAProduct(@PathVariable("productId") Long productId) throws NotFoundException {
-        Optional<Product> productOptional = productService.deleteAProduct(productId);
+    public ResponseEntity<Long> deleteAProduct(@PathVariable("productId") Long productId) throws NotFoundException {
+        Optional<Long> productOptional = productService.deleteAProduct(productId);
         if (productOptional.isEmpty()) {
             throw new NotFoundException("Product not found");
         }
 
-        return new ResponseEntity<>(getProductResponseDtoFromProduct(productOptional.get()), HttpStatus.OK);
+        return new ResponseEntity<>(productOptional.get(), HttpStatus.OK);
     }
 }

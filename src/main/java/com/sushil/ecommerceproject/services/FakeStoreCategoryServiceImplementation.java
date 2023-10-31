@@ -2,6 +2,7 @@ package com.sushil.ecommerceproject.services;
 
 import com.sushil.ecommerceproject.clients.fakestore.FakeStoreClient;
 import com.sushil.ecommerceproject.clients.fakestore.FakeStoreProductResponseDto;
+import com.sushil.ecommerceproject.models.Category;
 import com.sushil.ecommerceproject.models.Product;
 import org.springframework.stereotype.Service;
 
@@ -16,13 +17,21 @@ public class FakeStoreCategoryServiceImplementation implements CategoryService {
         this.fakeStoreClient = fakeStoreClient;
     }
     @Override
-    public Optional<String[]> getAllCategories() {
+    public Optional<Category[]> getAllCategories() {
         Optional<String[]> categoriesOptional = fakeStoreClient.getAllCategories();
         if (categoriesOptional.isEmpty()) {
             return Optional.empty();
         }
 
-        return Optional.of(categoriesOptional.get());
+        String[] categoryNames = categoriesOptional.get();
+        Category[] categories = new Category[categoryNames.length];
+        int i = 0;
+        for (String categoryName: categoryNames) {
+            Category category = new Category();
+            category.setName(categoryName);
+            categories[i++] = category;
+        }
+        return Optional.of(categories);
     }
 
     @Override
